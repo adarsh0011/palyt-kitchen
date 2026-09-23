@@ -143,4 +143,77 @@ describe("isDishAvailable", () => {
 
     expect(isDishAvailable(recipe, stock)).toBe(true);
   });
+	it("makes multiple dishes unavailable when they share an ingredient below par", () => {
+  const stock: StockItem[] = [
+    {
+      name: "Cashews",
+      qty: 200,
+      unit: "g",
+      par: 250,
+    },
+  ];
+
+  const paneerButterMasala: Recipe = {
+    dish: "Paneer Butter Masala",
+    price: 320,
+    ingredients: [
+      {
+        name: "Cashews",
+        qty: 15,
+        unit: "g",
+      },
+    ],
+  };
+
+  const shahiPaneerKorma: Recipe = {
+    dish: "Shahi Paneer Korma",
+    price: 360,
+    ingredients: [
+      {
+        name: "Cashews",
+        qty: 40,
+        unit: "g",
+      },
+    ],
+  };
+
+  expect(
+    isDishAvailable(paneerButterMasala, stock)
+  ).toBe(false);
+
+  expect(
+    isDishAvailable(shahiPaneerKorma, stock)
+  ).toBe(false);
+});
+it("marks a dish unavailable when a required ingredient is missing from stock", () => {
+  const stock: StockItem[] = [
+    {
+      name: "Butter",
+      qty: 900,
+      unit: "g",
+      par: 200,
+    },
+  ];
+
+  const recipe: Recipe = {
+    dish: "Butter Naan",
+    price: 70,
+    ingredients: [
+      {
+        name: "Butter",
+        qty: 12,
+        unit: "g",
+      },
+      {
+        name: "Refined Flour",
+        qty: 90,
+        unit: "g",
+      },
+    ],
+  };
+
+  expect(
+    isDishAvailable(recipe, stock)
+  ).toBe(false);
+});
 });

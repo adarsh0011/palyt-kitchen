@@ -16,15 +16,13 @@ function App() {
   );
 
   const recipes = recipeData as Recipe[];
-
-  
+ 
   const [editingIngredient, setEditingIngredient] =
     useState<string | null>(null);
 
   const [editQty, setEditQty] = useState("");
   const [editPar, setEditPar] = useState("");
 
-  
   const [showAddForm, setShowAddForm] = useState(false);
 
   const [newName, setNewName] = useState("");
@@ -33,7 +31,8 @@ function App() {
     useState<StockItem["unit"]>("g");
   const [newPar, setNewPar] = useState("");
 
-  
+  const [searchTerm, setSearchTerm] = useState("");
+
   function handleOrder(recipe: Recipe) {
     try {
       const updatedStock = orderDish(recipe, stock);
@@ -45,23 +44,29 @@ function App() {
     }
   }
 
-
   function handleEdit(item: StockItem) {
     setEditingIngredient(item.name);
     setEditQty(String(item.qty));
     setEditPar(String(item.par));
   }
-
   function handleSaveEdit(itemName: string) {
     const quantity = Number(editQty);
     const par = Number(editPar);
 
-    if (!Number.isFinite(quantity) || quantity < 0) {
+    if (
+      editQty.trim() === "" ||
+      !Number.isFinite(quantity) ||
+      quantity < 0
+    ) {
       alert("Quantity must be a non-negative number.");
       return;
     }
 
-    if (!Number.isFinite(par) || par < 0) {
+    if (
+      editPar.trim() === "" ||
+      !Number.isFinite(par) ||
+      par < 0
+    ) {
       alert("Par level must be a non-negative number.");
       return;
     }
@@ -81,7 +86,6 @@ function App() {
     setEditingIngredient(null);
   }
 
- 
   function handleAddIngredient() {
     const name = newName.trim();
     const quantity = Number(newQty);
@@ -102,12 +106,20 @@ function App() {
       return;
     }
 
-    if (!Number.isFinite(quantity) || quantity < 0) {
+    if (
+      newQty.trim() === "" ||
+      !Number.isFinite(quantity) ||
+      quantity < 0
+    ) {
       alert("Quantity must be a non-negative number.");
       return;
     }
 
-    if (!Number.isFinite(par) || par < 0) {
+    if (
+      newPar.trim() === "" ||
+      !Number.isFinite(par) ||
+      par < 0
+    ) {
       alert("Par level must be a non-negative number.");
       return;
     }
@@ -124,36 +136,42 @@ function App() {
       newIngredient,
     ]);
 
-   
     setNewName("");
     setNewQty("");
     setNewUnit("g");
     setNewPar("");
     setShowAddForm(false);
   }
-	function handleDeleteIngredient(itemName: string) {
-  const usedBy = recipes.filter((recipe) =>
-    recipe.ingredients.some(
-      (ingredient) => ingredient.name === itemName
-    )
-  );
 
-  if (usedBy.length > 0) {
-    const dishNames = usedBy
-      .map((recipe) => recipe.dish)
-      .join(", ");
-
-    alert(
-      `Cannot delete ${itemName}. It is used by: ${dishNames}`
+  function handleDeleteIngredient(itemName: string) {
+    const usedBy = recipes.filter((recipe) =>
+      recipe.ingredients.some(
+        (ingredient) => ingredient.name === itemName
+      )
     );
 
-    return;
+    if (usedBy.length > 0) {
+      const dishNames = usedBy
+        .map((recipe) => recipe.dish)
+        .join(", ");
+
+      alert(
+        `Cannot delete ${itemName}. It is used by: ${dishNames}`
+      );
+
+      return;
+    }
+
+    setStock((currentStock) =>
+      currentStock.filter((item) => item.name !== itemName)
+    );
   }
 
-  setStock((currentStock) =>
-    currentStock.filter((item) => item.name !== itemName)
+  const filteredStock = stock.filter((item) =>
+    item.name
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase())
   );
-}
 
   return (
     <main className="app">
@@ -163,8 +181,7 @@ function App() {
       </header>
 
       <div className="dashboard">
-      
-
+        {/* Stock panel */}
         <section className="panel">
           <div className="section-header">
             <h2>Stock</h2>
@@ -174,12 +191,23 @@ function App() {
                 setShowAddForm((current) => !current)
               }
             >
-              {showAddForm ? "Cancel" : "Add ingredient"}
+              {showAddForm
+                ? "Cancel"
+                : "Add ingredient"}
             </button>
           </div>
 
         
+          <input
+            type="text"
+            placeholder="Search ingredients..."
+            value={searchTerm}
+            onChange={(event) =>
+              setSearchTerm(event.target.value)
+            }
+          />
 
+       
           {showAddForm && (
             <div className="ingredient-form">
               <h3>Add ingredient</h3>
@@ -247,11 +275,13 @@ function App() {
             </div>
           )}
 
-          
-
+  
           <div className="stock-list">
-            {stock.map((item) => (
-              <div className="stock-row" key={item.name}>
+            {filteredStock.map((item) => (
+              <div
+                className="stock-row"
+                key={item.name}
+              >
                 {editingIngredient === item.name ? (
                   <>
                     <div>
@@ -327,11 +357,14 @@ function App() {
                     >
                       Edit
                     </button>
-			<button
-  onClick={() => handleDeleteIngredient(item.name)}
->
-  Delete
-</button>
+
+                    <button
+                      onClick={() =>
+                        handleDeleteIngredient(item.name)
+                      }
+                    >
+                      Delete
+                    </button>
                   </>
                 )}
               </div>
@@ -339,8 +372,7 @@ function App() {
           </div>
         </section>
 
-   
-
+       
         <section className="panel">
           <h2>Menu</h2>
 
@@ -376,7 +408,9 @@ function App() {
 
                     <button
                       disabled={!available}
-                      onClick={() => handleOrder(recipe)}
+                      onClick={() =>
+                        handleOrder(recipe)
+                      }
                     >
                       Order
                     </button>
@@ -392,4 +426,3 @@ function App() {
 }
 
 export default App;
-

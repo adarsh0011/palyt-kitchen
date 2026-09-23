@@ -141,4 +141,30 @@ describe("orderDish", () => {
 
     expect(stock[0].qty).toBe(1.4);
   });
+	it("allows an order that takes an ingredient below par", () => {
+  const stock: StockItem[] = [
+    {
+      name: "Cashews",
+      qty: 250,
+      unit: "g",
+      par: 250,
+    },
+  ];
+
+  const recipe: Recipe = {
+    dish: "Test Dish",
+    price: 100,
+    ingredients: [
+      {
+        name: "Cashews",
+        qty: 15,
+        unit: "g",
+      },
+    ],
+  };
+
+  const updatedStock = orderDish(recipe, stock);
+
+  expect(updatedStock[0].qty).toBe(235);
+});
 });

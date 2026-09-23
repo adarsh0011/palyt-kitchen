@@ -131,6 +131,29 @@ function App() {
     setNewPar("");
     setShowAddForm(false);
   }
+	function handleDeleteIngredient(itemName: string) {
+  const usedBy = recipes.filter((recipe) =>
+    recipe.ingredients.some(
+      (ingredient) => ingredient.name === itemName
+    )
+  );
+
+  if (usedBy.length > 0) {
+    const dishNames = usedBy
+      .map((recipe) => recipe.dish)
+      .join(", ");
+
+    alert(
+      `Cannot delete ${itemName}. It is used by: ${dishNames}`
+    );
+
+    return;
+  }
+
+  setStock((currentStock) =>
+    currentStock.filter((item) => item.name !== itemName)
+  );
+}
 
   return (
     <main className="app">
@@ -304,6 +327,11 @@ function App() {
                     >
                       Edit
                     </button>
+			<button
+  onClick={() => handleDeleteIngredient(item.name)}
+>
+  Delete
+</button>
                   </>
                 )}
               </div>
